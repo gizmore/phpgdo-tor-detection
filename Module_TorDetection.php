@@ -50,7 +50,7 @@ final class Module_TorDetection extends GDO_Module
 		return $this->tempPath('exit_nodes.txt');
 	}
 	
-	public function onInit() : void
+	public function onModuleInit() : void
 	{
 		$path = $this->getExitNodePath();
 		if ($file = file_get_contents($path))
