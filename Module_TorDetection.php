@@ -21,7 +21,7 @@ final class Module_TorDetection extends GDO_Module
 	public function getDependencies() : array
 	{
 		return [
-			'Net'
+			'Net',
 		];
 	}
 	
@@ -47,7 +47,7 @@ final class Module_TorDetection extends GDO_Module
 	
 	public function getExitNodePath() : string
 	{
-		return $this->tempPath('exit_nodes.txt');
+		return $this->filePath('temp/exit_nodes.txt');
 	}
 	
 	public function onModuleInit() : void
