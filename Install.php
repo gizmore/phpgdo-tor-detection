@@ -2,6 +2,8 @@
 namespace GDO\TorDetection;
 
 use GDO\Net\HTTP;
+use GDO\Util\FileUtil;
+use GDO\Util\Strings;
 
 final class Install
 {
@@ -9,6 +11,7 @@ final class Install
 	{
 		$url = $module->cfgExitNodesURL();
 		$path = $module->getExitNodePath();
+		FileUtil::createDir(Strings::rsubstrTo('/', $path));
 		file_put_contents($path, HTTP::getFromURL($url));
 	}
 	
