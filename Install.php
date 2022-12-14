@@ -11,7 +11,7 @@ final class Install
 	{
 		$url = $module->cfgExitNodesURL();
 		$path = $module->getExitNodePath();
-		FileUtil::createDir(Strings::rsubstrTo('/', $path));
+		FileUtil::createDir(Strings::rsubstrTo($path, '/'));
 		file_put_contents($path, HTTP::getFromURL($url));
 	}
 	
