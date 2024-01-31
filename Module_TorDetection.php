@@ -1,17 +1,20 @@
 <?php
 namespace GDO\TorDetection;
 
+use GDO\Core\Application;
+use GDO\Core\GDO_DBException;
 use GDO\Core\GDO_Module;
 use GDO\Core\GDO_RedirectError;
 use GDO\Core\GDT_Checkbox;
 use GDO\Core\GDT_Hook;
 use GDO\Net\GDT_IP;
 use GDO\Net\GDT_Url;
+use GDO\User\GDO_User;
 
 /**
  * Tor detection and optional restriction.
  *
- * @since 7.0.1
+ * @since 7.0.3
  * @author gizmore
  */
 final class Module_TorDetection extends GDO_Module
@@ -25,6 +28,13 @@ final class Module_TorDetection extends GDO_Module
 			'Net',
 		];
 	}
+
+    public function getClasses(): array
+    {
+        return [
+            GDO_TorIP::class,
+        ];
+    }
 
 	##############
 	### Config ###
@@ -45,24 +55,10 @@ final class Module_TorDetection extends GDO_Module
 	### Hooks ###
 	#############
 
-	public function onModuleInit(): void
-	{
-		$path = $this->getExitNodePath();
-		if ($file = file_get_contents($path))
-		{
-			if (strpos($file, GDT_IP::$CURRENT) !== false)
-			{
-				$this->torDetected();
-			}
-		}
-	}
-
-	public function getExitNodePath(): string
-	{
-		return $this->filePath('temp/exit_nodes.txt');
-	}
-
-	private function torDetected(): void
+    /**
+     * @throws GDO_RedirectError
+     */
+    private function torDetected(): void
 	{
 		if ($this->cfgRestricted())
 		{
@@ -86,4 +82,14 @@ final class Module_TorDetection extends GDO_Module
 
 	public function cfgExitNodesURL(): string { return $this->getConfigVar('tor_exitnode_url'); }
 
+    /**
+     * @throws GDO_DBException
+     */
+    public function hookBeforeExecute(): void
+    {
+        if (GDO_TorIP::isTorIP(GDT_IP::$CURRENT))
+        {
+            $this->torDetected();
+        }
+    }
 }

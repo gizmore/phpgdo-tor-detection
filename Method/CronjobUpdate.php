@@ -4,12 +4,18 @@ namespace GDO\TorDetection\Method;
 use GDO\Core\GDO_Exception;
 use GDO\Cronjob\MethodCronjob;
 use GDO\Net\HTTP;
+use GDO\TorDetection\GDO_TorIP;
 use GDO\TorDetection\Module_TorDetection;
 use GDO\Util\FileUtil;
 use GDO\Util\Strings;
 
 final class CronjobUpdate extends MethodCronjob
 {
+
+    public function runAt(): string
+    {
+        return $this->runHourly();
+    }
 
     /**
      * @throws GDO_Exception
@@ -26,11 +32,11 @@ final class CronjobUpdate extends MethodCronjob
     {
         $module = Module_TorDetection::instance();
         $url = $module->cfgExitNodesURL();
-        $path = $module->getExitNodePath();
-        FileUtil::createDir(Strings::rsubstrTo($path, '/'));
         $contents = HTTP::getFromURL($url);
-        file_put_contents($path, $contents);
-
+        $contents = str_replace("\r", '', $contents);
+        $lines = explode("\n", trim($contents));
+        GDO_TorIP::table()->truncate();
+        GDO_TorIP::bulkInsert(GDO_TorIP::table()->gdoColumnsCache(), $lines);
     }
 
 }
