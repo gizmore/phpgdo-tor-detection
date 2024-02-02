@@ -22,7 +22,8 @@ final class GDO_TorIP extends GDO
      */
     public static function isTorIP(string $ip): bool
     {
-        return self::table()->countWhere("tor_ip='$ip'") > 0;
+        $ip = GDO::quoteS($ip);
+        return self::table()->countWhere("tor_ip={$ip}") > 0;
     }
 
 }
