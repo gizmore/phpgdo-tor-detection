@@ -5,6 +5,7 @@ use GDO\Core\Application;
 use GDO\Core\GDO_DBException;
 use GDO\Core\GDO_Module;
 use GDO\Core\GDO_RedirectError;
+use GDO\Core\GDT;
 use GDO\Core\GDT_Checkbox;
 use GDO\Core\GDT_Hook;
 use GDO\Net\GDT_IP;
@@ -43,7 +44,7 @@ final class Module_TorDetection extends GDO_Module
 	{
 		return [
 			GDT_Checkbox::make('tor_restriction')->initial('0'),
-			GDT_Url::make('tor_exitnode_url')->initial('https://check.torproject.org/torbulkexitlist')->allowExternal()->notNull(),
+			GDT_Url::make('tor_exitnode_url')->initial('https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-exit-nodes.lst')->allowExternal()->notNull(),
 		];
 	}
 
@@ -58,14 +59,14 @@ final class Module_TorDetection extends GDO_Module
     /**
      * @throws GDO_RedirectError
      */
-    private function torDetected(): void
+    private function torDetected(): ?GDT
 	{
 		if ($this->cfgRestricted())
 		{
 			$this->restrict();
 		}
 
-		GDT_Hook::callHook('TorDetected');
+		return GDT_Hook::callHook('TorDetected');
 	}
 
 	public function cfgRestricted(): bool { return $this->getConfigValue('tor_restriction'); }
@@ -85,11 +86,12 @@ final class Module_TorDetection extends GDO_Module
     /**
      * @throws GDO_DBException
      */
-    public function hookBeforeExecute(): void
+    public function hookBeforeExecute(): ?GDT
     {
         if (GDO_TorIP::isTorIP(GDT_IP::$CURRENT))
         {
-            $this->torDetected();
+            return $this->torDetected();
         }
+        return null;
     }
 }

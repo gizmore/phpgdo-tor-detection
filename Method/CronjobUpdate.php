@@ -22,6 +22,7 @@ final class CronjobUpdate extends MethodCronjob
      */
     public function run(): void
     {
+        $this->logNotice("Updating Tor Exit Nodes...");
         $this->updateTORExitNodes();
     }
 
@@ -33,10 +34,14 @@ final class CronjobUpdate extends MethodCronjob
         $module = Module_TorDetection::instance();
         $url = $module->cfgExitNodesURL();
         $contents = HTTP::getFromURL($url);
-        $contents = str_replace("\r", '', $contents);
-        $lines = explode("\n", trim($contents));
-        GDO_TorIP::table()->truncate();
-        GDO_TorIP::bulkInsert(GDO_TorIP::table()->gdoColumnsCache(), $lines);
+        if ($contents)
+        {
+            $contents = str_replace("\r", '', $contents);
+            $lines = explode("\n", trim($contents));
+            GDO_TorIP::table()->truncate();
+            $lines = array_map(function($line){ return [$line]; }, $lines);
+            GDO_TorIP::bulkInsert(GDO_TorIP::table()->gdoColumnsCache(), $lines);
+        }
     }
 
 }
